@@ -1,4 +1,3 @@
-
 #ifndef motorC_h 
 #define motorC_h
 
@@ -6,13 +5,13 @@
 
 class motorC
 {
-  public:
+public:
     int _f_enA, _f_enB;
-    int _b_enA, _b_enB;
-    
+
+
     // dir - pin to determine direction of both motors
     // sp - pin to determine speed of both motors 
-    motorC(int dir, int sp,int f_enA,int f_enB,int b_enA, int b_enB);
+    motorC(int dir, int sp, int f_enA, int f_enB);
 
     //Changes Duty Cycle of PWM 
     void dutyCycle(int duty);
@@ -21,22 +20,23 @@ class motorC
     void invDir();
 
     //Sets dir pin to HIGH 
-    void fwd(); 
+    void fwd();
 
     //Sets dir pin to LOW 
     void bwd();
 
-    void halt(); 
-    
-    //True = Foward; False = Backward
-    bool checkDir(bool motor); 
-     
-  private:
+    // Sets Speed to 0 
+    void halt();
+
+    //Displays Current Duty Cycle
+    int currSpeed();
+
+private:
     int _dir;
     bool currDir;
-     
-    int _sp; 
-     
+    int _sp;
+    int speed; 
+
 };
 
 #endif
