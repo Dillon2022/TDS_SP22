@@ -1,4 +1,4 @@
-#include "Arduino.h"
+ #include "Arduino.h"
 #include "motorC.h"
 
 motorC::motorC(int dir, int sp, int f_enA, int f_enB)
@@ -32,6 +32,7 @@ void motorC::dutyCycle(int duty)
     }
     speed = (duty / 100) * 255; 
     analogWrite(_sp, speed);
+    Serial.print(speed);
 }
 
 //State = !State 

@@ -15,7 +15,7 @@ MMA8452Q IMU;
 //Motor Encoders and Controllers 
 volatile int encL = 0; 
 volatile int encR = 0; 
-motorC leftControl(2, 35, 3, 4); 
+motorC leftControl(2, 13, 3, 4); 
 motorC rightControl(5, 37, 6, 7); 
 
 
@@ -28,8 +28,8 @@ void setup()
   Serial.begin(9600); 
 
   //Check Sensors
-  if(IMU.begin()) Serial.println("IMU successfully connected.");
-  if(temp.begin()) Serial.println("Temperature Sensor successfully connected.");
+  //if(IMU.begin()) Serial.println("IMU successfully connected.");
+  //if(temp.begin()) Serial.println("Temperature Sensor successfully connected.");
   
   //Interrupt Setup for Encoder readings 
   
@@ -47,22 +47,30 @@ void loop()
 {
   char cmd[20];
 
-  Serial.println("Enter Command - motor, temp, cam"); 
+  //Serial.println("Enter Command - motor, temp, cam"); 
+  analogWrite(13, 0);
+  //delay(50); 
+  //analogWrite(13, 40);
+  //delay(100);
+  //analogWrite(13, 0); 
+
   
   if(Serial.available() > 1)
   {
     int readChars; 
     readChars = Serial.readBytesUntil('\n', cmd, sizeof(cmd)-1);
     cmd[readChars] = '\0';
-    Serial.flush(); 
+    //Serial.flush(); 
 
     if(strcmp(cmd, "motor") == 0)
     {
+      Serial.print("Motor");
+      leftControl.dutyCycle(20); 
       motorUpdate(); 
     }
     else if (strcmp(cmd, "temp") == 0)
     {
-       temp(); 
+       readTemp(); 
     }
     else if (strcmp(cmd, "cam") == 0)
     {
@@ -71,7 +79,7 @@ void loop()
   }
   else
   {
-    Serial.println("Incorrect Command, reenter")
+   // Serial.println("Incorrect Command, reenter");
   }
    
   
@@ -89,13 +97,13 @@ void readData(int* dataX, int* dataY)
 {
     if(Serial.available() > 1)
       {
-        dataX = Serial.parseInt(SKIP_ALL);
-        dataY = Serial.parseInt(SKIP_ALL);
+        *dataX = Serial.parseInt(SKIP_ALL);
+        *dataY = Serial.parseInt(SKIP_ALL);
         
         Serial.print("1: ");
-        Serial.println(dataX);
+        Serial.println(*dataX);
         Serial.print("2: ");
-        Serial.println(dataY);
+        Serial.println(*dataY);
         Serial.flush();
       }
 }
@@ -103,28 +111,28 @@ void readData(int* dataX, int* dataY)
 
 
 // duty must be 0-100
-void vel(motorC* L, motorC* R, int dutyL, int dutyR)
+void vel(int dutyL, int dutyR)
 {
-  L->dutyCycle(dutyL % 100);
-  R->dutyCycle(dutyR % 100);
+  leftControl.dutyCycle(dutyL % 100);
+  rightControl.dutyCycle(dutyR % 100);
 }
 
 void motorUpdate()
 {
-  long int dataX = 0;
-  long int dataY = 0;  
-  while(true)
+  int dataX = 0;
+  int dataY = 0;  
+  while(true) 
   {
-      readData(dataX, dataY); 
+      readData(&dataX, &dataY); 
 
-      if(dataX < 0 || dataY < 0) 
+      if(dataX == -1 && dataY == -1) 
       {
-        vel(&leftControl, &rightControl, 0, 0); 
+        vel(0, 0); 
         break;
       }
 
-      vel(&leftControl, &rightControl, dataX, dataY); 
-      imu(); 
+      vel(dataX, dataY); 
+      //imu(); 
   }
   Serial.println("Break");
 }
@@ -158,7 +166,7 @@ void encCountR()
 }
 
 
-void temp()
+void readTemp()
 {
   temp.wake(); 
   delay(20); 
